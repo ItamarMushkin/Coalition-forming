@@ -3,27 +3,31 @@ import pandas as pd
 from matplotlib import pyplot as plt
 plt.style.use('fivethirtyeight')
 
+
 def add_size_to_name(name, party_seats):
     return name+' ({})'.format(party_seats[name])
+
 
 def add_sizes_to_partners(possible_partners_dict, party_seats):
     possible_partners_with_sizes = {add_size_to_name(k, party_seats): {add_size_to_name(_v, party_seats) for _v in v} 
                                     for k, v in possible_partners_dict.items()}
     return possible_partners_with_sizes
-    
+
+
 def plot_cooperation_network(possible_partners_dict, party_seats):
     g = nx.Graph(add_sizes_to_partners(possible_partners_dict, party_seats))
     node_size=[v * 30 for v in party_seats.values]
     plt.figure(figsize=(12,8)) 
     nx.draw_networkx(g, node_size=node_size)
-    
+
+
 def create_coalitions(possible_partners_dict, party_seats, only_maximal=False, only_valid=False):
     graph = nx.Graph(possible_partners_dict)
     parties = party_seats.index
     cliques = nx.find_cliques(graph) if only_maximal else nx.enumerate_all_cliques(graph)
 
     coalitions = pd.DataFrame(data=[{'members': set(coalition),
-                                 'value': sum(party_seats[party] for party in coalition)}
+                                     'value': sum(party_seats[party] for party in coalition)}
                            for coalition in cliques])
 
     coalitions = coalitions[coalitions['value']>60] if only_valid else coalitions
@@ -40,6 +44,7 @@ def create_coalitions(possible_partners_dict, party_seats, only_maximal=False, o
         coalitions['necessary_parties'] = None        
 
     return coalitions
+
 
 def plot_possible_coalitions(possible_partners_dict, coalitions_df, party_seats):
 
